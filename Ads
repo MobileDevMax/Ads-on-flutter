@@ -1,0 +1,134 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Ads',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: PostAdScreen(),
+    );
+  }
+}
+
+class PostAdScreen extends StatefulWidget {
+  @override
+  _PostAdScreenState createState() => _PostAdScreenState();
+}
+
+class _PostAdScreenState extends State<PostAdScreen> {
+  final TextEditingController titleController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
+  final TextEditingController priceController = TextEditingController();
+  List<Ad> ads = []; // List to hold ads
+
+  void saveAd() {
+    String title = titleController.text;
+    String description = descriptionController.text;
+    double? price = double.tryParse(priceController.text);
+
+    if (title.isNotEmpty && description.isNotEmpty && price != null) {
+      setState(() {
+        ads.add(Ad(title: title, description: description, price: price));
+      });
+      titleController.clear();
+      descriptionController.clear();
+      priceController.clear();
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Ad saved!'),
+      ));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Post Ad"),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.list),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AdListScreen(ads: ads),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: titleController,
+              decoration: InputDecoration(labelText: 'Title'),
+            ),
+            TextField(
+              controller: descriptionController,
+              decoration: InputDecoration(labelText: 'Description'),
+              maxLines: 4,
+            ),
+            TextField(
+              controller: priceController,
+              decoration: InputDecoration(labelText: 'Price'),
+              keyboardType: TextInputType.number,
+            ),
+            ElevatedButton(
+              onPressed: saveAd,
+              child: Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class Ad {
+  final String title;
+  final String description;
+  final double price;
+
+  Ad({required this.title, required this.description, required this.price});
+}
+
+class AdListScreen extends StatelessWidget {
+  final List<Ad> ads;
+
+  AdListScreen({required this.ads});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Saved Ads")),
+      body: ListView.builder(
+        itemCount: ads.length,
+        itemBuilder: (context, index) {
+          final ad = ads[index];
+          return Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(ad.title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(ad.description),
+                  Text("\$${ad.price}", style: TextStyle(color: Colors.green)),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
